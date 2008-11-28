@@ -7,7 +7,6 @@
  *      Author: Rafael de Paula Herrera
  */
 
-#include <iostream>
 #include <utility>
 #include "Grafo.h"
 
