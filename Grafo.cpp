@@ -2,62 +2,131 @@
  * Grafo.cpp
  *
  *  Created on: Nov 23, 2008
- *      Author: bode
+ *      Author: Evandro Couto Mantese
+ *      Author: Marcus Vinicius Ventura Bortolotti
+ *      Author: Rafael de Paula Herrera
  */
 
+#include <iostream>
+#include <utility>
 #include "Grafo.h"
 
-Grafo::Grafo(unsigned int numero_vertices) {
-	this->numero_vertices = numero_vertices;
-	this->matriz_adjacencia = new int*[this->numero_vertices];
-	for (unsigned int i = 0; i < this->numero_vertices; ++i) {
-		this->matriz_adjacencia[i] = new int[this->numero_vertices];
+Grafo::Grafo()
+{
 
-		for (unsigned int j = 0; j < this->numero_vertices; ++j) {
-			this->matriz_adjacencia[i][j] = -1;
+}
+
+Grafo::~Grafo()
+{
+
+}
+
+void
+Grafo::adiciona_vertice(Vertice* vertice)
+{
+	this->_vertices[vertice->id()] = vertice;
+}
+
+Grafo::Vertice*
+Grafo::vertice(unsigned int id)
+{
+	if (!this->_vertices.empty())
+	{
+		if (this->_vertices.find(id) != this->_vertices.end())
+		{
+			return this->_vertices[id];
 		}
 	}
+
+	return NULL;
 }
 
-Grafo::~Grafo() {
-	for (unsigned int i = 0; i < this->numero_vertices; ++i) {
-		delete this->matriz_adjacencia[i];
+void
+Grafo::reseta_cores()
+{
+	for (std::map<unsigned int, Grafo::Vertice*>::iterator it = this->_vertices.begin();
+			it != this->_vertices.end(); ++it)
+	{
+		it->second->_cor = Grafo::Vertice::BRANCO;
 	}
-	delete[] this->matriz_adjacencia;
 }
 
-void Grafo::liga_vertices(unsigned int vertice1, unsigned int vertice2, int peso) {
-	if (vertice1 > this->numero_vertices - 1 || vertice2 > this->numero_vertices - 1) {
-		// lancar excessao pois nao existem na matriz
-		return;
-	}
-	if (peso <= 0) {
-		// lancar excessao pois o peso nao pode ser negativo
-		return;
-	}
-
-	this->matriz_adjacencia[vertice1][vertice2] = peso;
-	this->matriz_adjacencia[vertice2][vertice1] = peso;
+Grafo::Vertice::Vertice(unsigned int identificador)
+{
+	this->_id = identificador;
 }
 
-bool Grafo::estao_ligados(unsigned int vertice1, unsigned int vertice2) {
-	if (vertice1 > this->numero_vertices - 1 || vertice2 > this->numero_vertices - 1) {
-		// lancar excessao pois nao existem na matriz
-		return false;
-	}
+Grafo::Vertice::~Vertice()
+{
 
-	return (this->matriz_adjacencia[vertice1][vertice2] > 0);
 }
 
-int Grafo::peso(unsigned int vertice1, unsigned int vertice2) {
-	if (vertice1 > this->numero_vertices - 1 || vertice2 > this->numero_vertices - 1) {
-		// lancar excessao pois nao existem na matriz
-		return false;
-	}
-
-	return this->matriz_adjacencia[vertice1][vertice2];
+unsigned int
+Grafo::Vertice::id()
+{
+	return this->_id;
 }
 
-unsigned int Grafo::vertices() {
-	return this->numero_vertices;
+void
+Grafo::Vertice::liga_com(Grafo::Vertice* vertice, unsigned int peso)
+{
+	vertice->adiciona_antecessor(this, peso);
+	this->adiciona_sucessor(vertice, peso);
+}
+
+bool
+Grafo::Vertice::esta_ligado_com(Grafo::Vertice* vertice)
+{
+	if (!vertice) return false;
+
+	for (std::vector< std::pair<Vertice*, unsigned int> >::iterator it = this->_sucessores.begin();
+			it != this->_sucessores.end(); ++it)
+	{
+
+		if (it->first == vertice) return true;
+	}
+
+	for (std::vector< std::pair<Vertice*, unsigned int> >::iterator it = this->_antecessores.begin();
+				it != this->_antecessores.end(); ++it)
+	{
+		if (it->first == vertice) return true;
+	}
+
+	return false;
+}
+
+void
+Grafo::Vertice::adiciona_antecessor(Grafo::Vertice* antecessor, unsigned int peso)
+{
+	std::pair<Grafo::Vertice*, unsigned int>
+	par;
+
+	par.first = antecessor;
+	par.second = peso;
+
+	this->_antecessores.push_back(par);
+}
+
+std::vector< std::pair<Grafo::Vertice*, unsigned int> >
+Grafo::Vertice::antecessores()
+{
+	return this->_antecessores;
+}
+
+void
+Grafo::Vertice::adiciona_sucessor(Grafo::Vertice* sucessor, unsigned int peso)
+{
+	std::pair<Grafo::Vertice*, unsigned int>
+	par;
+
+	par.first = sucessor;
+	par.second = peso;
+
+	this->_sucessores.push_back(par);
+}
+
+std::vector< std::pair<Grafo::Vertice*, unsigned int> >
+Grafo::Vertice::sucessores()
+{
+	return this->_sucessores;
 }
